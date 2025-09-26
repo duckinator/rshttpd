@@ -25,15 +25,15 @@ const BUF_SIZE: usize = 1024 * 1024 * 1;
 const EXTS: [(&str, &str); 9] = [
     // ext[n] = extension
     // ext[n]
-    (".css",     "text/css"),
-    (".html",    "text/html"),
-    (".jpeg",    "image/jpeg"),
-    (".jpg",     "image/jpeg"),
-    (".json",    "application/json"),
-    (".png",     "image/png"),
-    (".txt",     "text/plain"),
-    (".webm",    "video/webm"),
-    (".woff",    "font/woff"),
+    ("css",     "text/css"),
+    ("html",    "text/html"),
+    ("jpeg",    "image/jpeg"),
+    ("jpg",     "image/jpeg"),
+    ("json",    "application/json"),
+    ("png",     "image/png"),
+    ("txt",     "text/plain"),
+    ("webm",    "video/webm"),
+    ("woff",    "font/woff"),
 ];
 
 const BACKLOG: i32 = 50;
