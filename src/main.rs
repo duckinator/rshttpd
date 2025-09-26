@@ -50,33 +50,23 @@ fn watch_socket(epoll_fd: &Epoll, sock_fd: std::os::fd::BorrowedFd) -> nix::Resu
     epoll_fd.add(&sock_fd, event)
 }
 
-/*
-fn pabort(msg: &str) {
-    //std::libc::perror(msg);
-    std::process::exit(1);
-}
-*/
-fn reroot(_root: &str) {
-/*
-    if (syscall(SYS_unshare, CLONE_NEWUSER | CLONE_NEWNS))
-        pabort("unshare");
+fn reroot(root: &str) -> Result<(), Errno> {
+    use nix::sched::CloneFlags;
+    use nix::mount::MsFlags;
 
-    if (mount(root, root, NULL, MS_BIND | MS_PRIVATE, NULL))
-        pabort("mount");
+    nix::sched::unshare(CloneFlags::CLONE_NEWUSER | CloneFlags::CLONE_NEWNS)?;
+    nix::mount::mount::<str, str, str, str>(Some(root), root, None, MsFlags::MS_BIND | MsFlags::MS_PRIVATE, None)?;
+    nix::unistd::pivot_root(root, root)?;
+    nix::unistd::chdir("/")?;
 
-    if (syscall(SYS_pivot_root, root, root))
-        pabort("pivot_root");
-
-    if (chdir("/"))
-        pabort("chdir");
-*/
+    Ok(())
 }
 
 fn server_socket() -> nix::Result<OwnedFd> {
     let server_fd = socket(
         AddressFamily::Inet,
         SockType::Stream,
-        SockFlag::SOCK_NONBLOCK & SockFlag::SOCK_CLOEXEC,
+        SockFlag::SOCK_NONBLOCK | SockFlag::SOCK_CLOEXEC,
         None
     )?;
     setsockopt(&server_fd, sockopt::ReuseAddr, &true)?;
@@ -110,7 +100,7 @@ fn main() -> Result<(), std::io::Error> {
     watch_socket(&epoll_fd, server_fd.as_fd())?;
     log("Watching server_fd.");
 
-    reroot("site");
+    reroot("site")?;
     log("Isolated ./site as process mount root.");
 
     let mut events = [EpollEvent::empty()];
@@ -148,7 +138,6 @@ fn main() -> Result<(), std::io::Error> {
                         }
                         break;
                     };
-
 
                     let client_fd_fucked = unsafe { std::os::fd::BorrowedFd::borrow_raw(client_fd) };
                     watch_socket(&epoll_fd, client_fd_fucked)?;
