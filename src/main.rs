@@ -181,7 +181,7 @@ fn main() -> Result<(), std::io::Error> {
 
             // GET or HEAD request.
 
-            let ends_with_slash = &path[path.len() - 1..1] == "/";
+            let ends_with_slash = &path[path.len() - 1..] == "/";
             let path =
                 if ends_with_slash {
                     // Return /:dir/index.html for /:dir/.
